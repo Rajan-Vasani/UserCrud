@@ -4,6 +4,7 @@ import { Leave } from "../entities/interfaces/leave.interface";
 import {
   LeaveCreateRequest,
   LeaveUpdateRequest,
+  ChangeLeaveStatusRequest
 } from "../entities/requests/leave.request";
 import { validate } from "class-validator";
 import { plainToClass } from "class-transformer";
@@ -86,9 +87,9 @@ router.put("/:id", async (req: Request, res: Response, next: NextFunction) => {
 router.delete(
   "/:id",
   async (req: Request, res: Response, next: NextFunction) => {
-    const empId = req.params.id;
+    const leaveId = req.params.id;
     try {
-      const leave: Leave[] = await leaveService.deleteLeave(empId);
+      const leave: Leave[] = await leaveService.deleteLeave(leaveId);
       console.log("delete => ", leave);
       if (leave[0]) {
         res.status(200).json("leave deleted successfully");
@@ -103,4 +104,27 @@ router.delete(
   }
 );
 
+router.put("/changestatus/:id",async (req: Request, res: Response, next: NextFunction) => {
+  try{
+      const leaveId = req.params.id;
+      const changeLeaveStatusRequest: ChangeLeaveStatusRequest = plainToClass(ChangeLeaveStatusRequest,req.body);
+      const validationError = await validate(changeLeaveStatusRequest);
+      if(validationError.length > 0){
+        res.status(400).json({errors:validationError});
+        return;
+      }
+
+      const leave:Leave[] = await leaveService.changeLeaveStatus(changeLeaveStatusRequest,leaveId);
+      if(leave[0]){
+        res.json({message:"leave status updated succesfully"});
+      }else{
+        res.json({message:"leave status not updated"});
+      }
+    } catch(error){
+      console.error(error);
+      res.status(500).send("Error in updating the leave status");
+    }
+}
+);
+  
 export default router;

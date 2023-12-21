@@ -31,3 +31,13 @@ export class LeaveUpdateRequest{
     @IsNotEmpty()
     days!:number;
 }
+
+export class ChangeLeaveStatusRequest{
+    @IsString()
+    @IsNotEmpty()
+    userId!:string;
+
+    @IsEnum(LeaveApprovalStatus)
+    @IsNotEmpty()
+    status!:LeaveApprovalStatus;
+}

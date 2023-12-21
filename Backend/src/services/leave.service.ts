@@ -1,6 +1,6 @@
 import {Leave} from "../entities/interfaces/leave.interface";
 import {LeaveDao} from "../dao/leave.dao"
-import {LeaveCreateRequest,LeaveUpdateRequest} from "../entities/requests/leave.request";
+import {ChangeLeaveStatusRequest, LeaveCreateRequest,LeaveUpdateRequest} from "../entities/requests/leave.request";
 
 export class LeaveService{
     private readonly leaveDao : LeaveDao;
@@ -27,5 +27,9 @@ export class LeaveService{
 
     async deleteLeave(id:string):Promise<Leave[]>{
         return await this.leaveDao.deleteLeave(id);
+    }
+
+    async changeLeaveStatus(changeLeaveStatusRequest:ChangeLeaveStatusRequest,id:string):Promise<Leave[]>{
+        return await this.leaveDao.changeLeaveStatus(changeLeaveStatusRequest,id)
     }
 }
