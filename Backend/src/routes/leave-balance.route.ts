@@ -39,4 +39,21 @@ router.post("/",async(req:Request,res:Response,next:NextFunction) =>{
     }
 })
 
+router.delete("/:id",async (req:Request, res:Response,next:NextFunction) => {
+    const userId = req.params.id;
+    try {
+      const leave: LeaveBalance[] = await leaveBalanceService.deleteLeaveBalance(userId);
+      console.log("delete => ", leave);
+      if (leave[0]) {
+        res.status(200).json("leave deleted successfully");
+      } else {
+        res.status(500).json("leave not deleted");
+      }
+    } catch (error: any) {
+      console.error(error);
+      res.status(500).json("Error in deleting leave: " + error.message);
+      next(error);
+    }
+})
+
 export default router;

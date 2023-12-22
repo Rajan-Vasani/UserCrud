@@ -7,11 +7,82 @@ import {
   LeaveUpdateRequest,
   ChangeLeaveStatusRequest,
 } from "../entities/requests/leave.request";
-import { Hooks } from "sequelize/types/hooks";
-import afterUpdate from "sequelize";
 
 export class LeaveDao {
-  constructor() {}
+  constructor() {
+    db.Leave.addHook('beforeValidate',async (leave:Leave) => {
+      try{
+        console.log("Inside beforeUpdate hook");
+        const {id,userId,status} = leave;
+        console.log("leave id:",id);
+        console.log("User id:",userId);
+        console.log("Status:",status);
+        
+        
+      } catch (error){
+        console.error("Error in beforeValidate hook",error);
+      }
+    })
+
+
+    db.Leave.addHook('afterUpdate', async (leave: Leave) => {
+      try {
+        console.log("Inside afterUpdate Hook => ");
+        if (leave.status === "APPROVED") {
+          const { userId, leaveType, days } = leave;
+          console.log("leave days => ",days);
+          const leaveBalance = await db.LeaveBalance.findOne({
+            where: {
+              userId: userId,
+              leaveType: leaveType,
+            },
+          });
+          
+          if(leaveBalance){
+            if(leave.leaveType === "PLANNED_LEAVE"){
+              db.LeaveBalance.leaveType = {
+                  PLANNED_LEAVE: leaveBalance.balance -= leave.days,
+              };  
+              // leaveBalance.balance -= leave.days;
+            } else if(leave.leaveType === "NATIONAL_LEAVE"){
+              db.LeaveBalance.leaveType = {
+                NATIONAL_LEAVE: leaveBalance.balance -= leave.days,
+              }
+            }
+            await leaveBalance.save();
+          }
+        }
+      } catch (error) {
+        console.error('Error in afterUpdate hook:', error);
+      }
+    });
+
+
+
+    db.Leave.addHook('beforeCreate',async (leave:Leave) => {
+      try{
+        console.log("Inside beforeCreate hook => ");
+        const { userId, leaveType, days } = leave;
+        const leaveBalance = await db.LeaveBalance.findOne({
+          where:{
+            userId : userId,
+            leaveType : leaveType
+          }
+        });
+
+        if(leave.leaveType === "PLANNED_LEAVE" && (!leaveBalance || leaveBalance.balance < days)){
+          throw new Error ("Insufficient PLANNED_LEAVE balance");
+        } else if(leave.leaveType === "NATIONAL_LEAVE" && (!leaveBalance || leaveBalance.balance < days)){
+          throw new Error ("Insufficient NATIONAL_LEAVE balance");
+        }
+
+      } catch(error){
+        console.log("Error in beforeCreate hook",error);
+        throw error;
+      }
+    });
+
+  }
 
   async fetchLeaves(): Promise<Leave[]> {
     const models: Model[] = await db.Leave.findAll({});
@@ -30,17 +101,20 @@ export class LeaveDao {
   }
 
   async createLeave(createRequest: LeaveCreateRequest): Promise<Leave[]> {
-    const data = {
-      userId: createRequest.userId,
-      leaveType: createRequest.leaveType,
-      startDate: createRequest.startDate,
-      days: createRequest.days,
-    };
+    // const data = {
+    //   userId: createRequest.userId,
+    //   leaveType: createRequest.leaveType,
+    //   startDate: createRequest.startDate,
+    //   days: createRequest.days,
+    // };
+    try{
+      const models: Model = await db.Leave.create(createRequest);
+      console.log("created result => ", models);
+      return models.get();
+    } catch(err:any){
+      throw err.message;
+    }
 
-    const models: Model = await db.Leave.create(data);
-    console.log("created result => ", models);
-
-    return models.get();
   }
 
   async updateLeave(
@@ -75,55 +149,24 @@ export class LeaveDao {
     const data = changeLeaveStatusRequest;
     const userId = changeLeaveStatusRequest;
     const leaveId = id;
-    db.Leave.addHook('afterUpdate', async (leave: Leave) => {
-      try {
-        console.log("Inside addHook => ");
-        if (leave.status === "APPROVED") {
-          const { userId, leaveType, days } = leave;
-          console.log("leave days => ",days);
-          const leaveBalance = await db.LeaveBalance.findOne({
-            where: {
-              userId: userId,
-              leaveType: leaveType,
-            },
-          });
-          
-          if (leaveBalance === 0) {
-            // throw error
-            console.error()
-          }
-          
-          if(leave.leaveType === "PLANNED_LEAVE"){
-            db.LeaveBalance.leaveType = {
-                PLANNED_LEAVE: leaveBalance.balance -= leave.days
-            };
-          } else if(leave.leaveType === "NATIONAL_LEAVE"){
-               db.LeaveBalance.leaveType = {
-                NATIONAL_LEAVE: leaveBalance.balance -= leave.days,
-            }
-          }
-          // ---------------------------
-          // leaveBalance.balance -= days;
-          await leaveBalance.save();
-        }
-      } catch (error) {
-        console.error('Error in afterUpdate hook:', error);
-      }
-    });
+    
+    try{
+      const models: any = await db.Leave.update(data,{
+        where:{
+          id:leaveId,
+        },returning :true,
+        individualHooks:true,
+      });
+
+      console.log("updated result => ",models);
+      return [models[0]];
+    } catch(error){
+      throw error;
+    }
+
+    
 
 
-
-    const models: any = await db.Leave.update(data,{
-      where:{
-        id:leaveId,
-      },returning :true,
-      individualHooks:true,
-    });
-
-
-   console.log("updated result => ",models);
-
-    return [models[0]];
 
     // ------------------------- 4th Method ------------------------------------------
     // async function handleLeaveBalanceUpdate(leave: Leave) {

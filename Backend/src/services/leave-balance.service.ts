@@ -17,4 +17,8 @@ export class LeaveBalanceService{
     async createLeaveBalance(createRequest:LeaveBalanceCreateRequest):Promise<LeaveBalance[]>{
         return await this.leaveBalanceDao.createLeaveBalance(createRequest);
     }
+
+    async deleteLeaveBalance(id:string):Promise<LeaveBalance[]>{
+        return await this.leaveBalanceDao.deleteLeaveBalance(id);
+    }
 }

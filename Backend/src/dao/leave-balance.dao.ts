@@ -26,8 +26,17 @@ export class LeaveBalanceDao {
     return models.get();
   }
 
-//   async updateLeaveBalance(updateRequest:LeaveBalanceUpdateRequest):Promise<LeaveBalance[]>{
-//   }
+  async deleteLeaveBalance(id:string):Promise<LeaveBalance[]>{
+    const userId = id;
+    const models: any = await db.Leave.destroy({
+      where: {
+        userId: userId,
+      },
+    });
+    console.log("deleted result => ", models);
+
+    return models;
+  }
 
   private convertToEntity(model: Model): LeaveBalance {
     const result = model.get({ plain: true });

@@ -48,7 +48,7 @@ router.post("/", async (req: Request, res: Response, next) => {
 
     const leave: Leave[] = await leaveService.createLeave(createRequest);
 
-    res.json({ message: "leave created successfully" });
+      res.json({ message: "leave created successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).send("Error in creating leave");
