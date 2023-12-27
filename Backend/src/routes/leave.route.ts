@@ -122,7 +122,7 @@ router.put("/changestatus/:id",async (req: Request, res: Response, next: NextFun
       }
     } catch(error){
       console.error(error);
-      res.status(500).send("Error in updating the leave status");
+      res.status(500).json({err : error});
     }
 }
 );

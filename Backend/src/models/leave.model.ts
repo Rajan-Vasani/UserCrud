@@ -2,7 +2,7 @@ import {Model} from "sequelize";
 import {Leave} from "../entities/interfaces/leave.interface";
 import { LeaveType,LeaveApprovalStatus } from "../entities/enums/leave.enum";
 
-interface LeaveInterface extends Omit<Leave,"createdAt"|"updatedAt">{};
+interface LeaveInterface extends Omit<Leave,"createdAt"|"updatedAt"|"isNewRecord">{};
 
 module.exports = (sequelize:any,DataTypes:any) => {
     class Leave extends Model<LeaveInterface> implements LeaveInterface{

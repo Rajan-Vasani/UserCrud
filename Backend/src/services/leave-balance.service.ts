@@ -21,4 +21,8 @@ export class LeaveBalanceService{
     async deleteLeaveBalance(id:string):Promise<LeaveBalance[]>{
         return await this.leaveBalanceDao.deleteLeaveBalance(id);
     }
+
+    async carryLeaves():Promise<LeaveBalance[]>{
+        return await this.leaveBalanceDao.carryLeaves();
+    }
 }

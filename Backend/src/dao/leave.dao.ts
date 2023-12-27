@@ -7,23 +7,96 @@ import {
   LeaveUpdateRequest,
   ChangeLeaveStatusRequest,
 } from "../entities/requests/leave.request";
+import { LeaveApprovalStatus } from "../entities/enums/leave.enum";
 
 export class LeaveDao {
   constructor() {
-    db.Leave.addHook('beforeValidate',async (leave:Leave) => {
+    
+    db.Leave.addHook('beforeCreate',async (leave:Leave) => {
       try{
-        console.log("Inside beforeUpdate hook");
-        const {id,userId,status} = leave;
-        console.log("leave id:",id);
-        console.log("User id:",userId);
-        console.log("Status:",status);
-        
-        
-      } catch (error){
-        console.error("Error in beforeValidate hook",error);
-      }
-    })
+        console.log("Inside beforeCreate hook => ");
+        const { userId, leaveType, days } = leave;
+        const leaveBalance = await db.LeaveBalance.findOne({
+          where:{
+            userId : userId,
+            leaveType : leaveType
+          }
+        });
 
+        if(leave.leaveType === "PLANNED_LEAVE" && (!leaveBalance || leaveBalance.balance < days)){
+          throw new Error ("Insufficient PLANNED_LEAVE balance");
+        } else if(leave.leaveType === "NATIONAL_LEAVE" && (!leaveBalance || leaveBalance.balance < days)){
+          throw new Error ("Insufficient NATIONAL_LEAVE balance");
+        }
+
+      } catch(error){
+        console.log("Error in beforeCreate hook",error);
+        throw error;
+      }
+    });
+
+    db.Leave.addHook('beforeSave',async (leave:Leave,leaveId:any) => {
+
+      if(leave.isNewRecord === false){
+        
+        if(leave.status === "APPROVED"){
+          console.log("IN APPROVED");
+          
+          try{
+            console.log("Inside beforeSave hook =>");
+            const {userId,status} = leave;
+            const id = leaveId.where.id;
+            console.log("leave id =>",id);
+    
+            const leaveData = await db.Leave.findOne({
+              where:{
+                id : id
+              }
+            })
+            const {leaveType,days} = leaveData;
+    
+            console.log("User id =>",userId);
+            console.log("Status =>",status);
+            console.log("Leave type =>",leaveType);
+    
+            const leaveBalance = await db.LeaveBalance.findOne({
+              where:{
+                userId:userId,
+                leaveType:leaveType
+              }
+            });
+    
+            const {balance} = leaveBalance
+            console.log("leaveBalance =>",leaveBalance);
+            
+            const userData = await db.User.findOne({
+              where:{
+                id:userId,
+              }
+            })
+    
+            const {firstName,lastName} = userData;
+            console.log("FIRSTNAME =>",firstName);
+            console.log("LASTNAME =>",lastName);       
+    
+            if(leave.leaveType === "PLANNED_LEAVE" && (!leaveBalance || balance < days || days <=0)){
+              throw new Error (`Insufficient PLANNED_LEAVE balance of user ${firstName} ${lastName}`);
+            } else if(leave.leaveType === "NATIONAL_LEAVE" && (!leaveBalance || balance < days || days <= 0)){
+              throw new Error (`Insufficient NATIONAL_LEAVE balance of user ${firstName} ${lastName}`);
+            }
+            
+          } catch (error){
+            console.error("Error in beforeSave hook",error);
+            throw error;
+          }
+        } else if(leave.status === "DECLINED"){
+          leave.status === "DECLINED";
+          console.log("leave status is DECLINED");
+        }
+      } else{
+      console.log("CREATE METHOD");
+    }
+    })
 
     db.Leave.addHook('afterUpdate', async (leave: Leave) => {
       try {
@@ -51,34 +124,11 @@ export class LeaveDao {
             }
             await leaveBalance.save();
           }
+        } else if(leave.status === "DECLINED"){
+          console.log("leave status has been DECLINED");
         }
       } catch (error) {
         console.error('Error in afterUpdate hook:', error);
-      }
-    });
-
-
-
-    db.Leave.addHook('beforeCreate',async (leave:Leave) => {
-      try{
-        console.log("Inside beforeCreate hook => ");
-        const { userId, leaveType, days } = leave;
-        const leaveBalance = await db.LeaveBalance.findOne({
-          where:{
-            userId : userId,
-            leaveType : leaveType
-          }
-        });
-
-        if(leave.leaveType === "PLANNED_LEAVE" && (!leaveBalance || leaveBalance.balance < days)){
-          throw new Error ("Insufficient PLANNED_LEAVE balance");
-        } else if(leave.leaveType === "NATIONAL_LEAVE" && (!leaveBalance || leaveBalance.balance < days)){
-          throw new Error ("Insufficient NATIONAL_LEAVE balance");
-        }
-
-      } catch(error){
-        console.log("Error in beforeCreate hook",error);
-        throw error;
       }
     });
 
@@ -160,8 +210,8 @@ export class LeaveDao {
 
       console.log("updated result => ",models);
       return [models[0]];
-    } catch(error){
-      throw error;
+    } catch(error:any){
+      throw error.message;
     }
 
     

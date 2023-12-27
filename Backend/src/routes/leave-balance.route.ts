@@ -21,6 +21,17 @@ router.get("/",async(req:Request,res:Response,next:NextFunction) => {
     }
 });
 
+router.get("/carryLeave", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const leaveBalance: LeaveBalance[] = await leaveBalanceService.carryLeaves();
+    res.json({ message: "leaves carry forward successfully"});
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Error in carry forwarding leaves");
+    next(error);
+  }
+});
+
 router.post("/",async(req:Request,res:Response,next:NextFunction) =>{
     try{
         const createRequest:LeaveBalanceCreateRequest = plainToClass(LeaveBalanceCreateRequest,req.body);

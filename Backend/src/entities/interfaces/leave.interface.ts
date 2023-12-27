@@ -7,6 +7,7 @@ export interface Leave {
   startDate: string;
   days: number;
   status: LeaveApprovalStatus;
+  isNewRecord: boolean;
   createdAt: string;
   updatedAt: string;
 }
