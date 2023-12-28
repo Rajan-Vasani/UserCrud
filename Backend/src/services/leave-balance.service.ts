@@ -25,4 +25,8 @@ export class LeaveBalanceService{
     async carryLeaves():Promise<LeaveBalance[]>{
         return await this.leaveBalanceDao.carryLeaves();
     }
+
+    async creditLeaveBalance():Promise<LeaveBalance[]>{
+        return await this.leaveBalanceDao.creditLeaveBalance();
+    }
 }

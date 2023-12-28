@@ -40,15 +40,28 @@ export class UserDao {
 
     const data = updateRequest;
     const userid = id;
-    const models: any = await db.User.update(data,{
-      where: {
-        id: userid,
-      },
-    });
-    console.log("updated result => ",models);
+    const [affectedRows]:[number] = await db.User.update(data,{
+      where:{id:userid}
+    })
+    // const models: any = await db.User.update(data,{
+    //   where: {
+    //     id: userid,
+    //   },
+    // });
+    if(affectedRows > 0) {
+      const updatedUser:User | null = await db.User.findOne({
+        where:{id:userid}
+      });
+      if(updatedUser){
+        return [updatedUser];
+      } 
+    }
+    // console.log("updated result => ",models);
     
-    return [models[0]];
+    // return [models[0]];
+    return [];
   }
+  
   async deleteUser(id:string): Promise<User[]> {
     const userid = id;
     const models: any = await db.User.destroy({

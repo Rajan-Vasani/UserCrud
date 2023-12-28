@@ -1,9 +1,10 @@
 import express, { Express,Request,Response} from "express";
 import bodyParser from "body-parser";
 import {databaseConnector} from "../config/database.config";
-import userRoutes from "../routes/user.route"
-import leaveRoutes from "../routes/leave.route"
-import leaveBalanceRoutes from "../routes/leave-balance.route"
+import userRoutes from "../routes/user.route";
+import leaveRoutes from "../routes/leave.route";
+import leaveBalanceRoutes from "../routes/leave-balance.route";
+import holidayListRoutes from "../routes/holiday-list.route"
 
 const app: Express = express();
 const port = 3000;
@@ -19,6 +20,7 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/user",userRoutes);
 app.use("/leave",leaveRoutes);
 app.use("/leave-balance",leaveBalanceRoutes);
+app.use("/holiday-list",holidayListRoutes);
 app.listen(port, () => {
   console.log(`Server is running at ${port}`);
 });

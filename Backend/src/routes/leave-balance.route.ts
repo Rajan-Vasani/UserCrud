@@ -32,6 +32,17 @@ router.get("/carryLeave", async (req: Request, res: Response, next: NextFunction
   }
 });
 
+router.get("/creditLeave", async (req: Request, res: Response, next: NextFunction) => {
+  try{
+    const leaveBalance: LeaveBalance[] = await leaveBalanceService.creditLeaveBalance();
+    res.json({ message: "leaves credit successfully",data:leaveBalance});
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Error in credit leaves");
+    next(error);
+  }
+})
+
 router.post("/",async(req:Request,res:Response,next:NextFunction) =>{
     try{
         const createRequest:LeaveBalanceCreateRequest = plainToClass(LeaveBalanceCreateRequest,req.body);
