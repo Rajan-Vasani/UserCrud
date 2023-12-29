@@ -1,6 +1,6 @@
 import {Leave} from "../entities/interfaces/leave.interface";
 import {LeaveDao} from "../dao/leave.dao"
-import {ChangeLeaveStatusRequest, LeaveCreateRequest,LeaveUpdateRequest} from "../entities/requests/leave.request";
+import {ChangeLeaveStatusRequest, PlannedLeaveCreateRequest,NationalLeaveCreateRequest,LeaveUpdateRequest} from "../entities/requests/leave.request";
 
 export class LeaveService{
     private readonly leaveDao : LeaveDao;
@@ -17,8 +17,12 @@ export class LeaveService{
         return await this.leaveDao.fetchLeaveById(id);
     }
 
-    async createLeave(createRequest:LeaveCreateRequest):Promise<Leave[]>{
-        return await this.leaveDao.createLeave(createRequest);
+    async createPlannedLeave(createRequest:PlannedLeaveCreateRequest):Promise<Leave[]>{
+        return await this.leaveDao.createPlannedLeave(createRequest);
+    }
+
+    async createNationalLeave(createRequest:NationalLeaveCreateRequest):Promise<Leave[]>{
+        return await this.leaveDao.createNationalLeave(createRequest);
     }
 
     async updateLeave(updateRequest:LeaveUpdateRequest,id:string):Promise<Leave[]>{

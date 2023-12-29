@@ -8,6 +8,7 @@ module.exports = (sequelize:any,DataTypes:any) => {
     class Leave extends Model<LeaveInterface> implements LeaveInterface{
         public id!: string;
         public userId!: string;
+        public nhId !: string;
         public leaveType!: LeaveType;
         public startDate!: string;
         public days!: number;
@@ -28,17 +29,25 @@ module.exports = (sequelize:any,DataTypes:any) => {
                 key: 'id'
             }
         },
+        nhId: {
+            type: DataTypes.UUID,
+            allowNull:true,
+            references: {
+                model: 'holiday-list',
+                key: 'id'
+            }
+        },
         leaveType: {
             type: DataTypes.STRING,
             allowNull: false
         },
         startDate: {
             type: DataTypes.DATE,
-            allowNull: false
+            allowNull: true
         },
         days: {
             type: DataTypes.INTEGER,
-            allowNull: false
+            allowNull: true
         },
         status:{
             type:DataTypes.STRING,

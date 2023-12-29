@@ -1,7 +1,6 @@
 import { LeaveBalance } from "../entities/interfaces/leave-balance.interface";
 import { LeaveBalanceDao } from "../dao/leave-balance.dao";
 import { LeaveBalanceCreateRequest,LeaveBalanceUpdateRequest } from "../entities/requests/leave-balance.request";
-import { LeaveCreateRequest } from "../entities/requests/leave.request";
 
 export class LeaveBalanceService{
     private readonly leaveBalanceDao : LeaveBalanceDao;

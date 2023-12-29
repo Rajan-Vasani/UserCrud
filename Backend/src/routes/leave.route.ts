@@ -2,9 +2,10 @@ import express, { NextFunction, Router, Request, Response } from "express";
 import { LeaveService } from "../services/leave.service";
 import { Leave } from "../entities/interfaces/leave.interface";
 import {
-  LeaveCreateRequest,
+  PlannedLeaveCreateRequest,
+  NationalLeaveCreateRequest,
   LeaveUpdateRequest,
-  ChangeLeaveStatusRequest
+  ChangeLeaveStatusRequest,
 } from "../entities/requests/leave.request";
 import { validate } from "class-validator";
 import { plainToClass } from "class-transformer";
@@ -36,22 +37,44 @@ router.get("/:id", async (req: Request, res: Response, next) => {
 
 router.post("/", async (req: Request, res: Response, next) => {
   try {
-    const createRequest: LeaveCreateRequest = plainToClass(
-      LeaveCreateRequest,
-      req.body
-    );
-    const validationError = await validate(createRequest);
-    if (validationError.length > 0) {
-      res.status(400).json({ errors: validationError });
-      return;
-    }
+    console.log("Request Body: ", req.body);
+    const leavetype = req.body.leaveType;
+    if (leavetype === "PLANNED_LEAVE") {
+      const createRequest: PlannedLeaveCreateRequest = plainToClass(
+        PlannedLeaveCreateRequest,
+        req.body
+      );
+      const validationError = await validate(createRequest);
+      if (validationError.length > 0) {
+        res.status(400).json({ errors: validationError });
+        return;
+      }
 
-    const leave: Leave[] = await leaveService.createLeave(createRequest);
+      const leave: Leave[] = await leaveService.createPlannedLeave(
+        createRequest
+      );
 
       res.json({ message: "leave created successfully" });
+    } else if (leavetype === "NATIONAL_LEAVE") {
+      const createRequest: NationalLeaveCreateRequest = plainToClass(
+        NationalLeaveCreateRequest,
+        req.body
+      );
+
+      const validationError = await validate(createRequest);
+      if (validationError.length > 0) {
+        res.status(400).json({ errors: validationError });
+        return;
+      }
+
+      const leave: Leave[] = await leaveService.createNationalLeave(
+        createRequest
+      );
+      res.json({ message: "leave created successfully" });
+    }
   } catch (error) {
     console.error(error);
-    res.status(500).send("Error in creating leave");
+    res.status(500).json({message:error});
   }
 });
 
@@ -104,27 +127,35 @@ router.delete(
   }
 );
 
-router.put("/changestatus/:id",async (req: Request, res: Response, next: NextFunction) => {
-  try{
+router.put(
+  "/changestatus/:id",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
       const leaveId = req.params.id;
-      const changeLeaveStatusRequest: ChangeLeaveStatusRequest = plainToClass(ChangeLeaveStatusRequest,req.body);
+      const changeLeaveStatusRequest: ChangeLeaveStatusRequest = plainToClass(
+        ChangeLeaveStatusRequest,
+        req.body
+      );
       const validationError = await validate(changeLeaveStatusRequest);
-      if(validationError.length > 0){
-        res.status(400).json({errors:validationError});
+      if (validationError.length > 0) {
+        res.status(400).json({ errors: validationError });
         return;
       }
 
-      const leave:Leave[] = await leaveService.changeLeaveStatus(changeLeaveStatusRequest,leaveId);
-      if(leave[0]){
-        res.json({message:"leave status updated succesfully"});
-      }else{
-        res.json({message:"leave status not updated"});
+      const leave: Leave[] = await leaveService.changeLeaveStatus(
+        changeLeaveStatusRequest,
+        leaveId
+      );
+      if (leave[0]) {
+        res.json({ message: "leave status updated succesfully" });
+      } else {
+        res.json({ message: "leave status not updated" });
       }
-    } catch(error){
+    } catch (error) {
       console.error(error);
-      res.status(500).json({err : error});
+      res.status(500).json({ err: error });
     }
-}
+  }
 );
-  
+
 export default router;
