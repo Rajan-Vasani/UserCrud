@@ -20,7 +20,6 @@ export class HolidayListDao {
           const data = response.data;
           const items = data.items;
           const holidays = items.map((holiday:any) => ({name:holiday.summary, date: holiday.start.date}));
-        //   console.log("holidays => ", holidays);
           const uniqueHoliday = holidays.filter((holiday:any) => holiday.date.startsWith('2023'));
 
         //   console.log("uniqueHoliday list: ", uniqueHoliday);
