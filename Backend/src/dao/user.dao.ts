@@ -55,9 +55,7 @@ export class UserDao {
       if(updatedUser){
         return [updatedUser];
       } 
-    }
-    // console.log("updated result => ",models);
-    
+    }    
     // return [models[0]];
     return [];
   }
